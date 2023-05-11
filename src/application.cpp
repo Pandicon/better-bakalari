@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include "application.h"
+#include "imgui_utils.h"
 
 Application::Application()
     : io(ImGui::GetIO()), window(nullptr) {
@@ -107,6 +108,11 @@ void Application::Update() {
         }
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
+
+        ImGui::InputText("password", &state.example_string, ImGuiInputTextFlags_Password);
+        ImGui::SameLine(); HelpMarker("Display all characters as '*'.\nDisable clipboard cut and copy.\nDisable logging.\n");
+        ImGui::InputTextWithHint("password (w/ hint)", "<password>", &state.example_string, ImGuiInputTextFlags_Password);
+        ImGui::InputText("password (clear)", &state.example_string);
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
