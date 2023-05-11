@@ -12,10 +12,12 @@ public:
 	~Application();
 
 	void Init(GLFWwindow* window, const char* glsl_version);
+	void NewFrame();
 	virtual void Update();
 	void Render();
 	void Shutdown();
 
 	ImGuiIO& io;
 	State state;
+	GLFWwindow* window;
 };

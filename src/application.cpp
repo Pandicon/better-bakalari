@@ -1,18 +1,28 @@
+#define GL_SILENCE_DEPRECATION
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
+#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+
 #include "application.h"
 
 Application::Application()
-    : io(ImGui::GetIO()) {
+    : io(ImGui::GetIO()), window(nullptr) {
 }
 
 Application::~Application() {
 }
 
-void Application::Init(GLFWwindow* window, const char* glsl_version) {
-    ImGuiIO& io_init = ImGui::GetIO(); (void)io_init;
-    io_init.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io_init.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io_init.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io_init.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+/*
+Initialise state variables, ImGUI settings, fonts...
+*/
+void Application::Init(GLFWwindow* window_in, const char* glsl_version) {
+    window = window_in;
+    io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -22,7 +32,7 @@ void Application::Init(GLFWwindow* window, const char* glsl_version) {
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle& style = ImGui::GetStyle();
-    if (io_init.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -31,7 +41,6 @@ void Application::Init(GLFWwindow* window, const char* glsl_version) {
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -45,7 +54,7 @@ void Application::Init(GLFWwindow* window, const char* glsl_version) {
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    io_init.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 14.0f);
+    io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 14.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
@@ -54,18 +63,102 @@ void Application::Init(GLFWwindow* window, const char* glsl_version) {
     state.show_demo_window = true;
     state.show_another_window = false;
     state.clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    io = io_init;
 }
 
+/*
+Start the Dear ImGui frame
+*/
+void Application::NewFrame() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+/*
+ImGUI UI code
+*/
 void Application::Update() {
+    // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+    if (state.show_demo_window)
+        ImGui::ShowDemoWindow(&state.show_demo_window);
 
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        ImGui::Checkbox("Demo Window", &state.show_demo_window);      // Edit bools storing our window open/close state
+        ImGui::Checkbox("Another Window", &state.show_another_window);
+
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::ColorEdit3("clear color", (float*)&state.clear_color); // Edit 3 floats representing a color
+
+        if (ImGui::Button("Button")) {                          // Buttons return true when clicked (most widgets return true when edited/activated)
+            counter++;
+            if (counter % 3 == 0)
+                ImGui::StyleColorsDark();
+            if (counter % 3 == 1)
+                ImGui::StyleColorsClassic();
+            if (counter % 3 == 2)
+                ImGui::StyleColorsLight();
+        }
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::End();
+    }
+
+    // 3. Show another simple window.
+    if (state.show_another_window)
+    {
+        ImGui::Begin("Another Window", &state.show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Text("Hello from another window!");
+        if (ImGui::Button("Close Me"))
+            state.show_another_window = false;
+        ImGui::End();
+    }
 }
 
+/*
+Update OpenGL buffers and render ImGUI
+*/
 void Application::Render() {
+    // Rendering
+    ImGui::Render();
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(state.clear_color.x * state.clear_color.w, state.clear_color.y * state.clear_color.w, state.clear_color.z * state.clear_color.w, state.clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+    // Update and Render additional Platform Windows
+    // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+    //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
+
+    glfwSwapBuffers(window);
 }
 
+/*
+Destroy the window, terminate GLFW and ImGUI
+*/
 void Application::Shutdown() {
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
