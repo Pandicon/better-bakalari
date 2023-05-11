@@ -7,6 +7,8 @@
 #include "application.h"
 #include "imgui_utils.h"
 
+const char SPECIAL_CHARACTERS[29] = u8"ìšèøžýáíéúùïò";
+
 Application::Application()
     : io(ImGui::GetIO()), window(nullptr) {
 }
@@ -55,7 +57,13 @@ void Application::Init(GLFWwindow* window_in, const char* glsl_version) {
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 14.0f);
+    ImVector<ImWchar> ranges;
+    ImFontGlyphRangesBuilder builder;
+    builder.AddText(SPECIAL_CHARACTERS);                   // Add a string
+    builder.AddRanges(io.Fonts->GetGlyphRangesDefault());  // Add one of the default ranges
+    builder.BuildRanges(&ranges);                          // Build the final result (ordered ranges with all the unique characters submitted)
+    io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 14.0f, nullptr, ranges.Data);
+    io.Fonts->Build();
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
@@ -109,10 +117,7 @@ void Application::Update() {
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
 
-        ImGui::InputText("password", &state.example_string, ImGuiInputTextFlags_Password);
-        ImGui::SameLine(); HelpMarker("Display all characters as '*'.\nDisable clipboard cut and copy.\nDisable logging.\n");
-        ImGui::InputTextWithHint("password (w/ hint)", "<password>", &state.example_string, ImGuiInputTextFlags_Password);
-        ImGui::InputText("password (clear)", &state.example_string);
+        HelpMarker("Display all characters as '*'.\nDisable clipboard cut and copy.\nDisable logging.\n");
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
@@ -125,6 +130,27 @@ void Application::Update() {
         ImGui::Text("Hello from another window!");
         if (ImGui::Button("Close Me"))
             state.show_another_window = false;
+        ImGui::End();
+    }
+
+    // 4. Show login window
+    {
+        ImGui::Begin(u8"Pøihlášení");
+        ImGui::Text("Username");
+        ImGui::InputTextWithHint("##username", "username", &state.username);
+        ImGui::Text("Password");
+        if (state.show_password) {
+            ImGui::InputTextWithHint("##password_clear", "password", &state.password);
+        }
+        else {
+            ImGui::InputTextWithHint("##password", "password", &state.password, ImGuiInputTextFlags_Password);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(state.show_password ? "Hide password" : "Show password")) state.show_password = !state.show_password;
+        if (ImGui::Button(u8"Pøihlásit se")) {
+            state.password = "";
+            state.username = "";
+        }
         ImGui::End();
     }
 }
