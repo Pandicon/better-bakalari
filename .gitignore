@@ -32,6 +32,5 @@
 *.app
 
 bin/
-vendor/
 .vs/
 *.ini
