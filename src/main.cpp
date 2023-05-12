@@ -3,7 +3,9 @@
 // If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
+#include <chrono>
 #include <stdio.h>
+#include <thread>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -15,6 +17,8 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include "application.h"
+
+const float FPS_CLAMP = 120.0;
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -86,6 +90,9 @@ int main(int, char**)
     while (!glfwWindowShouldClose(application.window))
 #endif
     {
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
+
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
@@ -96,6 +103,12 @@ int main(int, char**)
         application.NewFrame();
         application.Update();
         application.Render();
+
+        end = std::chrono::system_clock::now();
+        if (application.state.fps_clamp > 0.0) {
+            std::chrono::duration<float, std::milli> ms_this_frame = end - start;
+            std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000.0 / FPS_CLAMP - ms_this_frame.count())));
+        }
     }
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;

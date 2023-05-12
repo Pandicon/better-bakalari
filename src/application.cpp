@@ -101,7 +101,8 @@ void Application::Update() {
         ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
         ImGui::Checkbox("Demo Window", &state.show_demo_window);      // Edit bools storing our window open/close state
         ImGui::Checkbox("Another Window", &state.show_another_window);
-
+        
+        ImGui::InputFloat("FPS clamp", &state.fps_clamp);
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&state.clear_color); // Edit 3 floats representing a color
 
