@@ -20,4 +20,7 @@ public:
 	ImGuiIO& io;
 	State state;
 	GLFWwindow* window;
+
+private:
+	void render_login();
 };
