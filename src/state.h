@@ -1,5 +1,7 @@
 #pragma once
 
+#include <httplib.h>
+#include <optional>
 #include <string>
 #include <imgui.h>
 
@@ -10,6 +12,10 @@ struct State
 {
 	State();
 	~State();
+	void init();
+	std::optional<std::string> get_access_token(std::string);
+
+	std::optional<std::string> api_url;
 
 	bool show_demo_window;
 	bool show_another_window;

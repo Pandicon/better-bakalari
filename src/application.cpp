@@ -1,4 +1,5 @@
 #define GL_SILENCE_DEPRECATION
+
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
@@ -17,7 +18,7 @@ Application::~Application() {
 }
 
 /*
-Initialise state variables, ImGUI settings, fonts...
+Initialise state variables, ImGUI settings, fonts, state...
 */
 void Application::Init(GLFWwindow* window_in, const char* glsl_version) {
     state = State::State();
@@ -70,10 +71,7 @@ void Application::Init(GLFWwindow* window_in, const char* glsl_version) {
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
-
-    state.show_demo_window = true;
-    state.show_another_window = false;
-    state.clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    state.init();
 }
 
 /*
@@ -137,7 +135,9 @@ void Application::Update() {
     }
 
     // 4. Show login window
-    render_login();
+    if (!state.auth.access_token.has_value()) {
+        render_login();
+    }
 }
 
 /*

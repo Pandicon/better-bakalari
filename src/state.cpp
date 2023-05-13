@@ -1,11 +1,82 @@
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+
+#include <fstream>
+#include <httplib.h>
+#include <iostream>
+#include <json/json.h>
+
 #include "state.h"
 
 State::State()
 	: show_another_window(false), show_demo_window(true), clear_color(ImVec4(0.45f, 0.55f, 0.60f, 1.00f)) {
 	fps_clamp = 0.0;
+    api_url = std::nullopt;
 	auth = AuthState::AuthState();
 	login = LoginState::LoginState();
 }
 
 State::~State() {
+}
+
+void State::init() {
+	show_demo_window = true;
+	show_another_window = false;
+	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    std::ifstream save_file("save.json");
+    if (save_file.is_open()) {
+        Json::Value save_data;
+        Json::Reader reader;
+        bool parsingSuccessful = reader.parse(save_file, save_data);
+        if (parsingSuccessful) {
+            if (save_data["api_url"].asString().length() > 0) {
+                api_url.emplace(save_data["api_url"].asString());
+            }
+        }
+        save_file.close();
+    }
+
+	auth.init();
+
+	if (api_url.has_value()) {
+		login.api_url = api_url.value();
+	}
+
+	if (auth.refresh_token.has_value()) {
+		get_access_token(auth.refresh_token.value());
+	}
+}
+
+std::optional<std::string> State::get_access_token(std::string refresh_tok) {
+    if (!api_url.has_value()) return std::nullopt;
+
+    httplib::SSLClient ssl_client(api_url.value());
+    ssl_client.set_ca_cert_path("./resources/ca-bundle.crt");
+    ssl_client.set_connection_timeout(0, 300000); // 300 milliseconds
+    ssl_client.set_read_timeout(5, 0); // 5 seconds
+    ssl_client.set_write_timeout(5, 0); // 5 seconds
+
+    auto res = ssl_client.Post("/api/login", "client_id=ANDR&grant_type=refresh_token&refresh_token=" + refresh_tok, "application/x-www-form-urlencoded");
+    if (!res) return std::nullopt;
+    if (res->status != 200) return std::nullopt;
+    Json::Value body;
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse(res->body, body);
+    if (parsingSuccessful) {
+        std::string access_token = body["access_token"].asString();
+        int expires_in = body["expires_in"].asInt();
+        const auto p1 = std::chrono::system_clock::now();
+        int curr_timestamp = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+        auth.access_token = access_token;
+        auth.access_token_expires_at = curr_timestamp + expires_in;
+
+        login.api_response = std::nullopt;
+
+        login.username = "";
+        login.password = "";
+
+		std::cout << "Access token: " << access_token << std::endl;
+
+		return access_token;
+    }
 }

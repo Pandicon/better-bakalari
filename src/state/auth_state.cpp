@@ -1,3 +1,7 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "auth_state.h"
 
 AuthState::AuthState() {
@@ -7,3 +11,14 @@ AuthState::AuthState() {
 }
 
 AuthState::~AuthState() {};
+
+void AuthState::init() {
+	std::ifstream refresh_token_file("token.b64");
+	if (refresh_token_file.is_open()) {
+		std::string line;
+		std::getline(refresh_token_file, line);
+		if (line.length() > 0) {
+			refresh_token.emplace(line);
+		}
+	}
+}
