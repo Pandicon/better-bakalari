@@ -3,6 +3,7 @@
 #include <string>
 #include <imgui.h>
 
+#include "./state/auth_state.h"
 #include "./state/login_state.h"
 
 struct State
@@ -14,6 +15,7 @@ struct State
 	bool show_another_window;
 	ImVec4 clear_color;
 
+	AuthState auth;
 	LoginState login;
 
 	float fps_clamp;

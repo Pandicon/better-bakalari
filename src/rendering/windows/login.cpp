@@ -1,5 +1,7 @@
 ﻿#define CPPHTTPLIB_OPENSSL_SUPPORT
 
+#include <chrono>
+#include <fstream>
 #include <httplib.h>
 #include <iostream>
 #include <json/json.h>
@@ -33,23 +35,36 @@ void Application::render_login() {
 
         if (res) {
             std::cout << res << std::endl;
-            std::cout << "Status: " << res->status << std::endl;
-            std::cout << "Body: " << res->body << std::endl;
             if (res->status == 400) {
                 state.login.api_response.emplace("Incorrect username or password");
                 state.login.password = "";
+            } else if(res->status == 200) {
                 Json::Value body;
                 Json::Reader reader;
                 bool parsingSuccessful = reader.parse(res->body, body);
                 if (parsingSuccessful) {
-                    std::cout << body["error"] << std::endl;
+                    std::string access_token = body["access_token"].asString();
+                    std::string refresh_token = body["refresh_token"].asString();
+                    int expires_in = body["expires_in"].asInt();
+                    const auto p1 = std::chrono::system_clock::now();
+                    int curr_timestamp = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+                    state.auth.access_token = access_token;
+                    state.auth.refresh_token = refresh_token;
+                    state.auth.access_token_expires_at = curr_timestamp + expires_in;
+
+                    std::ofstream refresh_token_save("./token.b64");
+                    refresh_token_save << refresh_token;
+                    refresh_token_save.close();
+                    state.login.api_response = std::nullopt;
+
+                    state.login.username = "";
+                    state.login.password = "";
+                } else {
+                    state.login.api_response.emplace("Something went wrong while parsing the response");
                 }
-            } else if(res->status == 200) {
-            
             }
         } else {
             auto err = res.error();
-            std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
             state.login.api_response.emplace("HTTP error: " + httplib::to_string(err));
         }
 
