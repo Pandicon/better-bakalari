@@ -20,7 +20,9 @@ Application::~Application() {
 Initialise state variables, ImGUI settings, fonts...
 */
 void Application::Init(GLFWwindow* window_in, const char* glsl_version) {
+    state = State::State();
     window = window_in;
+
     io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
