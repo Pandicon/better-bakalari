@@ -25,16 +25,15 @@ void Application::render_login() {
     ImGui::SameLine();
     if (ImGui::Button(state.login.show_password ? "Hide password" : "Show password")) state.login.show_password = !state.login.show_password;
     if (ImGui::Button("Login")) {
-        httplib::SSLClient cli(state.login.api_url);
-        cli.set_ca_cert_path("./resources/ca-bundle.crt");
-        cli.set_connection_timeout(0, 300000); // 300 milliseconds
-        cli.set_read_timeout(5, 0); // 5 seconds
-        cli.set_write_timeout(5, 0); // 5 seconds
+        httplib::SSLClient client(state.login.api_url);
+        client.set_ca_cert_path("./resources/ca-bundle.crt");
+        client.set_connection_timeout(0, 300000); // 300 milliseconds
+        client.set_read_timeout(5, 0); // 5 seconds
+        client.set_write_timeout(5, 0); // 5 seconds
 
-        auto res = cli.Post("/api/login", "client_id=ANDR&grant_type=password&username=" + state.login.username + "&password=" + state.login.password, "application/x-www-form-urlencoded");
+        auto res = client.Post("/api/login", "client_id=ANDR&grant_type=password&username=" + state.login.username + "&password=" + state.login.password, "application/x-www-form-urlencoded");
 
         if (res) {
-            std::cout << res << std::endl;
             if (res->status == 400) {
                 state.login.api_response.emplace("Incorrect username or password");
                 state.login.password = "";
@@ -52,9 +51,28 @@ void Application::render_login() {
                     state.auth.refresh_token = refresh_token;
                     state.auth.access_token_expires_at = curr_timestamp + expires_in;
 
-                    std::ofstream refresh_token_save("./token.b64");
-                    refresh_token_save << refresh_token;
-                    refresh_token_save.close();
+                    std::ofstream refresh_token_save("./token.b64", std::ofstream::trunc);
+                    if (refresh_token_save.is_open()) {
+                        refresh_token_save << refresh_token;
+                        refresh_token_save.close();
+                    }
+
+                    std::ifstream save_file_in("./save.json");
+                    if (save_file_in.is_open()) {
+                        Json::Value save_data;
+                        Json::Reader reader;
+                        bool parsingSuccessful = reader.parse(save_file_in, save_data);
+                        if (parsingSuccessful) {
+                            save_data["api_url"] = state.login.api_url;
+                        }
+                        save_file_in.close();
+                        std::ofstream save_file_out("./save.json", std::ofstream::trunc);
+                        if (save_file_out.is_open()) {
+                            save_file_out << save_data;
+                            save_file_out.close();
+                        }                    
+                    }
+
                     state.login.api_response = std::nullopt;
 
                     state.login.username = "";
