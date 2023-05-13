@@ -36,3 +36,4 @@ vendor/openssl/
 .vs/
 *.ini
 token.b64
+save.json
