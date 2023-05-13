@@ -35,3 +35,4 @@ bin/
 vendor/openssl/
 .vs/
 *.ini
+token.b64
