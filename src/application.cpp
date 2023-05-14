@@ -7,11 +7,13 @@
 
 #include "application.h"
 #include "imgui_utils.h"
+#include "log.h"
 
 const char SPECIAL_CHARACTERS[29] = u8"לטר‎בםיתשןע";
 
 Application::Application()
     : io(ImGui::GetIO()), window(nullptr) {
+    Log::Init();
 }
 
 Application::~Application() {
@@ -171,6 +173,8 @@ void Application::Render() {
 Destroy the window, terminate GLFW and ImGUI
 */
 void Application::Shutdown() {
+    spdlog::shutdown();
+
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
