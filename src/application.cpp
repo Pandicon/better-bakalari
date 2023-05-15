@@ -143,6 +143,9 @@ void Application::Update() {
         render_login();
     }
     render_substitutions();
+    if (state.show_settings_window) {
+        render_settings();
+    }
 }
 
 /*
