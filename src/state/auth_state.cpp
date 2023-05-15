@@ -13,7 +13,7 @@ AuthState::AuthState() {
 AuthState::~AuthState() {};
 
 void AuthState::init() {
-	std::ifstream refresh_token_file("token.b64");
+	std::ifstream refresh_token_file("./token.b64");
 	if (refresh_token_file.is_open()) {
 		std::string line;
 		std::getline(refresh_token_file, line);

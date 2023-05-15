@@ -1,4 +1,4 @@
-#define GL_SILENCE_DEPRECATION
+﻿#define GL_SILENCE_DEPRECATION
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -9,7 +9,7 @@
 #include "imgui_utils.h"
 #include "log.h"
 
-const char SPECIAL_CHARACTERS[29] = u8"������������";
+const char SPECIAL_CHARACTERS[58] = u8"ěščřžýáíéúůďťňĚŠČŘŽÝÁÍÉÚŮĎťŇ";
 
 Application::Application()
     : io(ImGui::GetIO()), window(nullptr) {
@@ -140,6 +140,7 @@ void Application::Update() {
     if (!state.auth.access_token.has_value()) {
         render_login();
     }
+    render_substitutions();
 }
 
 /*

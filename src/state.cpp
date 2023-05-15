@@ -14,6 +14,7 @@ State::State()
 	api_url = std::nullopt;
 	auth = AuthState::AuthState();
 	login = LoginState::LoginState();
+	substitutions = SubstitutionsState::SubstitutionsState();
 }
 
 State::~State() {
@@ -35,7 +36,6 @@ void State::init() {
 				api_url.emplace(save_data["api_url"].asString());
 				save_file_loaded = true;
 			}
-			BA_DEBUG("Save file loaded successfully");
 		}
 		save_file.close();
 	}
@@ -46,6 +46,8 @@ void State::init() {
 			save_file_output << "{}";
 			save_file_output.close();
 		}
+	} else {
+		BA_DEBUG("Save file loaded successfully");
 	}
 
 	auth.init();

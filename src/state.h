@@ -7,6 +7,7 @@
 
 #include "./state/auth_state.h"
 #include "./state/login_state.h"
+#include "./state/substitutions_state.h"
 
 struct State
 {
@@ -23,6 +24,7 @@ struct State
 
 	AuthState auth;
 	LoginState login;
+	SubstitutionsState substitutions;
 
 	float fps_clamp;
 };

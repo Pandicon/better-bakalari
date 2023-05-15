@@ -23,4 +23,5 @@ public:
 
 private:
 	void render_login();
+	void render_substitutions();
 };
