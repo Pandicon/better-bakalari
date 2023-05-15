@@ -45,16 +45,19 @@ void Application::render_substitutions() {
             if (res->status == 200) {
                 bool parse_success = state.substitutions.parse_from_json_string(res->body);
                 if(!parse_success) {
+                    BA_ERROR("Something went wrong while parsing the substitutions response");
                     state.substitutions.api_response.emplace("Something went wrong while parsing the response");
                 } else {
                     state.substitutions.just_reloaded = true;
                 }
             } else {
+                BA_ERROR("Something went wrong while getting the response: {}", res->body);
                 state.substitutions.api_response.emplace("Something went wrong while getting the response: " + res->body);
             }
         }
         else {
             auto err = res.error();
+            BA_ERROR("HTTP error: {}", httplib::to_string(err));
             state.substitutions.api_response.emplace("HTTP error: " + httplib::to_string(err));
         }
     }
