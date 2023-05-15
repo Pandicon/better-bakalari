@@ -27,5 +27,6 @@ struct State
 	SubstitutionsState substitutions;
 
 	float fps_clamp;
+	time_t frame_timestamp;
 };
 

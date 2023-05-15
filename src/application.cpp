@@ -1,4 +1,4 @@
-﻿#define GL_SILENCE_DEPRECATION
+#define GL_SILENCE_DEPRECATION
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -9,7 +9,7 @@
 #include "imgui_utils.h"
 #include "log.h"
 
-const char SPECIAL_CHARACTERS[58] = u8"ěščřžýáíéúůďťňĚŠČŘŽÝÁÍÉÚŮĎťŇ";
+const char SPECIAL_CHARACTERS[58] = u8"ěščřžýáíéúůďťňĚŠČŘŽÝÁÍÉÚŮĎŤŇ";
 
 Application::Application()
     : io(ImGui::GetIO()), window(nullptr) {
@@ -89,6 +89,8 @@ void Application::NewFrame() {
 ImGUI UI code
 */
 void Application::Update() {
+    state.frame_timestamp = std::time(nullptr);
+
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
     if (state.show_demo_window)
         ImGui::ShowDemoWindow(&state.show_demo_window);

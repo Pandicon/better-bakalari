@@ -87,11 +87,9 @@ std::optional<std::string> State::get_access_token(std::string refresh_tok) {
 		std::string access_token = body["access_token"].asString();
 		std::string refresh_token = body["refresh_token"].asString();
 		int expires_in = body["expires_in"].asInt();
-		const auto p1 = std::chrono::system_clock::now();
-		int curr_timestamp = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 		auth.access_token = access_token;
 		auth.refresh_token = refresh_token;
-		auth.access_token_expires_at = curr_timestamp + expires_in;
+		auth.access_token_expires_at = frame_timestamp + expires_in;
 
 		std::ofstream refresh_token_save("./token.b64", std::ofstream::trunc);
 		if (refresh_token_save.is_open()) {

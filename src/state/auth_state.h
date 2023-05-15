@@ -10,5 +10,5 @@ struct AuthState {
 
 	std::optional<std::string> access_token;
 	std::optional<std::string> refresh_token;
-	std::optional<int> access_token_expires_at;
+	std::optional<time_t> access_token_expires_at;
 };
