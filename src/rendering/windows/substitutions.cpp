@@ -28,7 +28,7 @@ void Application::render_substitutions() {
     if (state.substitutions.just_reloaded) {
         state.substitutions.just_reloaded = false;
     }
-    if (ImGui::Button("Load")) {
+    if (ImGui::Button("Load") || (state.substitutions.load_automatically && state.frame_timestamp > state.substitutions.last_loaded_timestamp + state.substitutions.load_delay_seconds)) {
         httplib::SSLClient client(state.login.api_url);
         client.set_ca_cert_path("./resources/ca-bundle.crt");
         client.set_connection_timeout(0, 300000); // 300 milliseconds

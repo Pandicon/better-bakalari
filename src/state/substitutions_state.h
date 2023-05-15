@@ -50,4 +50,10 @@ struct SubstitutionsState {
 	std::optional<std::string> api_response;
 	std::vector<SubstitutionDay> substitution_days;
 	bool just_reloaded;
+
+	time_t last_loaded_timestamp;
+	std::string last_loaded;
+
+	bool load_automatically;
+	int load_delay_seconds;
 };

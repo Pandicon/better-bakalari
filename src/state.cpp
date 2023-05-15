@@ -8,8 +8,11 @@
 #include "log.h"
 #include "state.h"
 
-State::State()
-	: show_another_window(false), show_demo_window(true), clear_color(ImVec4(0.45f, 0.55f, 0.60f, 1.00f)) {
+State::State() {
+	show_settings_window = true;
+	show_demo_window = true;
+	show_another_window = false;
+	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	fps_clamp = 0.0;
 	api_url = std::nullopt;
 	auth = AuthState::AuthState();
@@ -21,6 +24,7 @@ State::~State() {
 }
 
 void State::init() {
+	show_settings_window = true;
 	show_demo_window = true;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

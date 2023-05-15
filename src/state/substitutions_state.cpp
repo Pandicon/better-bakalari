@@ -8,6 +8,10 @@ SubstitutionsState::SubstitutionsState() {
 	api_response = std::nullopt;
 	substitution_days = std::vector<SubstitutionDay>();
 	just_reloaded = false;
+	last_loaded_timestamp = 0;
+	last_loaded = "";
+	load_automatically = false;
+	load_delay_seconds = 300;
 }
 
 SubstitutionsState::~SubstitutionsState() {};
