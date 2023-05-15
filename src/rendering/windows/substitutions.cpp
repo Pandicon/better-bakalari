@@ -1,10 +1,11 @@
 ﻿#define CPPHTTPLIB_OPENSSL_SUPPORT
+#define __STDC_WANT_LIB_EXT1__ 1
 
-#include <chrono>
 #include <fstream>
 #include <httplib.h>
 #include <iostream>
 #include <json/json.h>
+#include <time.h>
 
 #include "../../application.h"
 #include "../../log.h"
@@ -49,6 +50,16 @@ void Application::render_substitutions() {
                     state.substitutions.api_response.emplace("Something went wrong while parsing the response");
                 } else {
                     state.substitutions.just_reloaded = true;
+                    state.substitutions.last_loaded_timestamp = state.frame_timestamp;
+                    std::tm time_info;
+                    localtime_s(&time_info, &state.frame_timestamp);
+                    state.substitutions.last_loaded = "Last loaded: ";
+                    state.substitutions.last_loaded += (time_info.tm_mday < 10 ? "0" : "") + std::to_string(time_info.tm_mday) + "." +
+                        (time_info.tm_mon < 10 ? "0" : "") + std::to_string(time_info.tm_mon) + "." +
+                        std::to_string(1900 + time_info.tm_year) + " at " +
+                        (time_info.tm_hour < 10 ? "0" : "") + std::to_string(time_info.tm_hour) + ":" +
+                        (time_info.tm_min < 10 ? "0" : "") + std::to_string(time_info.tm_min) + ":" +
+                        (time_info.tm_sec < 10 ? "0" : "") + std::to_string(time_info.tm_sec);
                 }
             } else {
                 BA_ERROR("Something went wrong while getting the response: {}", res->body);
@@ -61,6 +72,8 @@ void Application::render_substitutions() {
             state.substitutions.api_response.emplace("HTTP error: " + httplib::to_string(err));
         }
     }
+    ImGui::SameLine();
+    ImGui::Text(state.substitutions.last_loaded.c_str());
     if (state.substitutions.api_response.has_value()) {
         ImGui::TextWrapped(state.login.api_response.value().c_str());
     }
