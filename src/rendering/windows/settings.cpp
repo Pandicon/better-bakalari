@@ -9,8 +9,10 @@ void Application::render_settings() {
         return;
     }
     if (ImGui::CollapsingHeader("Substitutions")) {
+        ImGui::PushItemWidth(100);
         ImGui::Checkbox("Automatically reload substitutions", &state.substitutions.load_automatically);
         ImGui::DragInt("Substitutions reload delay (seconds)", &state.substitutions.load_delay_seconds, 0.5f, 0, INT_MAX);
+        ImGui::PopItemWidth();
     }
     ImGui::End();
 }
