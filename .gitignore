@@ -37,3 +37,4 @@ vendor/openssl/
 *.ini
 token.b64
 save.json
+substitutions_log.json
