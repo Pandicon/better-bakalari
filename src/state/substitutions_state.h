@@ -34,10 +34,11 @@ struct Substitution {
 };
 
 struct SubstitutionDay {
-	SubstitutionDay(std::string day, std::vector<Substitution> substitutions);
+	SubstitutionDay(std::string day, std::string day_raw, std::vector<Substitution> substitutions);
 	~SubstitutionDay();
 
 	std::string day;
+	std::string day_raw;
 	std::vector<Substitution> substitutions;
 };
 
@@ -45,7 +46,7 @@ struct SubstitutionsState {
 	SubstitutionsState();
 	~SubstitutionsState();
 
-	bool parse_from_json_string(std::string json_string);
+	std::optional<std::vector<SubstitutionDay>> parse_from_json_string(std::string json_string) const;
 
 	std::optional<std::string> api_response;
 	std::vector<SubstitutionDay> substitution_days;

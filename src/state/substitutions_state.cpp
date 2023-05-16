@@ -16,7 +16,7 @@ SubstitutionsState::SubstitutionsState() {
 
 SubstitutionsState::~SubstitutionsState() {};
 
-bool SubstitutionsState::parse_from_json_string(std::string json_string) {
+std::optional<std::vector<SubstitutionDay>> SubstitutionsState::parse_from_json_string(std::string json_string) const {
 	Json::Value body;
 	Json::Reader reader;
 	bool parsingSuccessful = reader.parse(json_string, body);
@@ -46,20 +46,22 @@ bool SubstitutionsState::parse_from_json_string(std::string json_string) {
 			std::string day = date.substr(0, date.find("-"));
 
 			std::string date_parsed = day + "." + month + "." + year;
+			std::string date_raw_parsed = year + "-" + month + "-" + day;
 
 			if (substitutions_days.empty() || substitutions_days[subtitution_day_index].day != date_parsed) {
-				substitutions_days.push_back(SubstitutionDay(date_parsed, std::vector<Substitution>()));
+				substitutions_days.push_back(SubstitutionDay(date_parsed, date_raw_parsed, std::vector<Substitution>()));
 				subtitution_day_index += 1;
 			}
 			substitutions_days[subtitution_day_index].substitutions.push_back(substitution);
 		}
-		substitution_days = substitutions_days;
+		return substitutions_days;
 	}
-	return parsingSuccessful;
+	return std::nullopt;
 };
 
-SubstitutionDay::SubstitutionDay(std::string _day, std::vector<Substitution> _substitutions) {
+SubstitutionDay::SubstitutionDay(std::string _day, std::string _day_raw, std::vector<Substitution> _substitutions) {
 	day = _day;
+	day_raw = _day_raw;
 	substitutions = _substitutions;
 };
 
