@@ -146,6 +146,9 @@ void Application::Update() {
         render_login();
     }
     if (state.is_access_token_valid()) {
+        if (state.substitutions.load_automatically && state.frame_timestamp > state.substitutions.last_loaded_timestamp + state.substitutions.load_delay_seconds) {
+            update_substitutions();
+        }
         render_substitutions();
     }
     if (state.show_settings_window) {
