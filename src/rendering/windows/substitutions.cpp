@@ -64,6 +64,9 @@ void Application::render_substitutions() {
             } else {
                 BA_ERROR("Something went wrong while getting the response: {}", res->body);
                 state.substitutions.api_response.emplace("Something went wrong while getting the response: " + res->body);
+                if (res->status == 401) { // Invalid access token
+                    state.auth.access_token = std::nullopt;
+                }
             }
         }
         else {
@@ -75,7 +78,7 @@ void Application::render_substitutions() {
     ImGui::SameLine();
     ImGui::Text(state.substitutions.last_loaded.c_str());
     if (state.substitutions.api_response.has_value()) {
-        ImGui::TextWrapped(state.login.api_response.value().c_str());
+        ImGui::TextWrapped(state.substitutions.api_response.value().c_str());
     }
     ImGui::End();
 }
