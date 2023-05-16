@@ -32,7 +32,3 @@ private:
 #define BA_DEBUG(...)
 #define BA_TRACE(...)
 #endif
-
-#if false
-->log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, __VA_ARGS__)
-#endif
