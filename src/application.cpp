@@ -138,11 +138,16 @@ void Application::Update() {
         ImGui::End();
     }
 
-    // 4. Show login window
-    if (!state.auth.access_token.has_value()) {
+    if (!state.is_access_token_valid() && state.auth.refresh_token.has_value()) {
+        state.get_access_token(state.auth.refresh_token.value());
+    }
+    // Show login window
+    if (!state.auth.access_token.has_value() || (!state.is_access_token_valid() && !state.auth.refresh_token.has_value())) {
         render_login();
     }
-    render_substitutions();
+    if (state.is_access_token_valid()) {
+        render_substitutions();
+    }
     if (state.show_settings_window) {
         render_settings();
     }

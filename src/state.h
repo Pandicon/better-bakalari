@@ -15,6 +15,7 @@ struct State
 	~State();
 	void init();
 	std::optional<std::string> get_access_token(std::string);
+	bool is_access_token_valid();
 
 	std::optional<std::string> api_url;
 

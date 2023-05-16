@@ -28,6 +28,7 @@ void State::init() {
 	show_demo_window = true;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	frame_timestamp = std::time(nullptr);
 
 	bool save_file_loaded = false;
 	std::ifstream save_file("save.json");
@@ -66,7 +67,11 @@ void State::init() {
 }
 
 std::optional<std::string> State::get_access_token(std::string refresh_tok) {
-	if (!api_url.has_value()) return std::nullopt;
+	if (!api_url.has_value()) {
+		auth.access_token = std::nullopt;
+		auth.access_token_expires_at = std::nullopt;
+		return std::nullopt;
+	}
 
 	httplib::SSLClient ssl_client(api_url.value());
 	ssl_client.set_ca_cert_path("./resources/ca-bundle.crt");
@@ -76,11 +81,18 @@ std::optional<std::string> State::get_access_token(std::string refresh_tok) {
 
 	auto res = ssl_client.Post("/api/login", "client_id=ANDR&grant_type=refresh_token&refresh_token=" + refresh_tok, "application/x-www-form-urlencoded");
 	if (!res) {
+		auth.access_token = std::nullopt;
+		auth.access_token_expires_at = std::nullopt;
 		auto err = res.error();
 		BA_ERROR("HTTP error when loading the access token: {}", httplib::to_string(err));
 		return std::nullopt;
 	}
+	if (res->status == 400) { // Invalid refresh token
+		auth.refresh_token = std::nullopt;
+	}
 	if (res->status != 200) {
+		auth.access_token = std::nullopt;
+		auth.access_token_expires_at = std::nullopt;
 		BA_ERROR("Got response code {} when loading the access token\nResponse body: {}", res->status, res->body);
 		return std::nullopt;
 	}
@@ -109,6 +121,13 @@ std::optional<std::string> State::get_access_token(std::string refresh_tok) {
 		BA_DEBUG("Access token acquired successfully");
 
 		return access_token;
+	} else {
+		auth.access_token = std::nullopt;
+		auth.access_token_expires_at = std::nullopt;
 	}
 	return std::nullopt;
+}
+
+bool State::is_access_token_valid() {
+	return auth.access_token.has_value() && (frame_timestamp < auth.access_token_expires_at.value_or(10) - 10);
 }
