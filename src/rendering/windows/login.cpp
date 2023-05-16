@@ -82,11 +82,6 @@ void Application::render_login() {
             auto err = res.error();
             state.login.api_response.emplace("HTTP error: " + httplib::to_string(err));
         }
-
-        /*
-        state.password = "";
-        state.username = "";
-        */
     }
     if (state.login.api_response.has_value()) {
         ImGui::TextWrapped(state.login.api_response.value().c_str());
