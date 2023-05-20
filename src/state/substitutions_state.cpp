@@ -63,6 +63,9 @@ SubstitutionDay::SubstitutionDay(std::string _day, std::string _day_raw, std::ve
 	day = _day;
 	day_raw = _day_raw;
 	substitutions = _substitutions;
+
+	last_changes = std::vector<std::string>();
+	last_change_timestamp = 0;
 };
 
 SubstitutionDay::~SubstitutionDay() {};
@@ -74,6 +77,9 @@ Substitution::Substitution(std::string _day, std::string _subject, std::string _
 	change_type = _change_type;
 	description = _description;
 	time = _time;
+
+	last_change = "";
+	last_change_timestamp = 0;
 };
 
 Substitution::~Substitution() {};

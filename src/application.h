@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -26,4 +28,5 @@ private:
 	void render_settings();
 	void render_substitutions();
 	void update_substitutions();
+	std::string get_date_time_string(time_t timestamp) const;
 };

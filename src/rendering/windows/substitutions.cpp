@@ -34,11 +34,35 @@ void Application::render_substitutions() {
         ImGui::Text(state.substitutions.last_loaded.c_str());
         ImGui::EndMenuBar();
     }
-    for (auto substitutions_day : state.substitutions.substitution_days) {
+    for (auto &substitutions_day : state.substitutions.substitution_days) {
         if (state.substitutions.just_reloaded) {
             ImGui::SetNextItemOpen(true);
         }
         if (ImGui::CollapsingHeader(substitutions_day.day.c_str())) {
+            if (ImGui::BeginPopupContextItem()) {
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                if (substitutions_day.last_change_timestamp == 0) {
+                    ImGui::TextUnformatted(("No new changes found so far for " + substitutions_day.day).c_str());
+                } else {
+                    ImGui::TextUnformatted(("New changes for " + substitutions_day.day + " | Last changed: " + get_date_time_string(substitutions_day.last_change_timestamp)).c_str());
+                    substitutions_day.last_changes.erase(std::remove_if(substitutions_day.last_changes.begin(), substitutions_day.last_changes.end(),
+                        [](std::string last_change) {
+                            ImGui::Separator();
+                            ImGui::TextUnformatted(last_change.c_str());
+                            ImGui::SameLine();
+                            return ImGui::SmallButton("Remove");
+                        }), substitutions_day.last_changes.end());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Separator();
+                }
+                if (ImGui::Button("Close")) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Right-click to show changes in substitutions");
+            }
             for (auto substitution : substitutions_day.substitutions) {
                 ImGui::Text((substitution.hours + " | " + substitution.time).c_str());
                 ImGui::Text(substitution.description.c_str());
@@ -77,7 +101,19 @@ void Application::update_substitutions() {
                 state.substitutions.api_response.emplace("Something went wrong while parsing the response");
             }
             else {
-                state.substitutions.substitution_days = parsed_substitutions.value();
+                auto parsed_substitutions_value = parsed_substitutions.value();
+                for (int i = 0; i < parsed_substitutions_value.size(); i += 1) {
+                    auto curr_parsed = parsed_substitutions_value[i];
+                    auto it = std::find_if(state.substitutions.substitution_days.begin(), state.substitutions.substitution_days.end(), [&curr_parsed](const SubstitutionDay& saved_day) {
+                        return saved_day.day_raw == curr_parsed.day_raw;
+                        });
+                    if (it != state.substitutions.substitution_days.end()) {
+                        auto index = std::distance(state.substitutions.substitution_days.begin(), it);
+                        parsed_substitutions_value[i].last_changes = state.substitutions.substitution_days[index].last_changes;
+                        parsed_substitutions_value[i].last_change_timestamp = state.substitutions.substitution_days[index].last_change_timestamp;
+                    }
+                }
+                state.substitutions.substitution_days = parsed_substitutions_value;
                 state.substitutions.just_reloaded = true;
                 state.substitutions.last_loaded_timestamp = state.frame_timestamp;
                 std::tm time_info;
@@ -102,7 +138,7 @@ void Application::update_substitutions() {
                     substitutions_log_out << res->body;
                     substitutions_log_out.close();
                 }
-                std::vector<SubstitutionDay> current_substitutions = parsed_substitutions.value();
+                std::vector<SubstitutionDay> current_substitutions = parsed_substitutions_value;
                 std::vector<SubstitutionDay> past_substitutions = parsed_past_substitutions.has_value() ? parsed_past_substitutions.value() : std::vector<SubstitutionDay>();
                 // Erase substitutions that are both present in the current data and the saved data = unchanged substitutions
                 int cp = 0, pp = 0;

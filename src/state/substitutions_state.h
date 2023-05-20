@@ -31,6 +31,9 @@ struct Substitution {
 	std::string change_type;
 	std::string description;
 	std::string time;
+
+	std::string last_change;
+	time_t last_change_timestamp;
 };
 
 struct SubstitutionDay {
@@ -40,6 +43,9 @@ struct SubstitutionDay {
 	std::string day;
 	std::string day_raw;
 	std::vector<Substitution> substitutions;
+
+	std::vector<std::string> last_changes;
+	time_t last_change_timestamp;
 };
 
 struct SubstitutionsState {
