@@ -12,7 +12,28 @@
 #include "../../imgui_utils.h"
 
 void Application::render_substitutions() {
-    ImGui::Begin("Substitutions");
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_MenuBar;
+    if (!ImGui::Begin("Substitutions", &state.show_substitutions_window, window_flags)) {
+        ImGui::End();
+        return;
+    }
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Load")) {
+            ImGui::CloseCurrentPopup();
+            update_substitutions();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Options")) {
+            ImGui::PushItemWidth(100);
+            ImGui::Checkbox("Reload automatically", &state.substitutions.load_automatically);
+            ImGui::DragInt("Reload delay (seconds)", &state.substitutions.load_delay_seconds, 0.5f, 0, INT_MAX);
+            ImGui::PopItemWidth();
+            ImGui::EndMenu();
+        }
+        ImGui::Text(state.substitutions.last_loaded.c_str());
+        ImGui::EndMenuBar();
+    }
     for (auto substitutions_day : state.substitutions.substitution_days) {
         if (state.substitutions.just_reloaded) {
             ImGui::SetNextItemOpen(true);
@@ -28,11 +49,6 @@ void Application::render_substitutions() {
     if (state.substitutions.just_reloaded) {
         state.substitutions.just_reloaded = false;
     }
-    if (ImGui::Button("Load")) {
-        update_substitutions();
-    }
-    ImGui::SameLine();
-    ImGui::Text(state.substitutions.last_loaded.c_str());
     if (state.substitutions.api_response.has_value()) {
         ImGui::TextWrapped(state.substitutions.api_response.value().c_str());
     }

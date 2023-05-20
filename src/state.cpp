@@ -10,6 +10,7 @@
 
 State::State() {
 	show_settings_window = true;
+	show_substitutions_window = true;
 	show_demo_window = true;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
