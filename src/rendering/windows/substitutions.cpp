@@ -38,7 +38,7 @@ void Application::render_substitutions() {
         if (state.substitutions.just_reloaded) {
             ImGui::SetNextItemOpen(true);
         }
-        if (ImGui::CollapsingHeader(substitutions_day.day.c_str())) {
+        if (ImGui::CollapsingHeader((substitutions_day.day + (substitutions_day.last_changes.empty() ? "" : " (!)")).c_str())) {
             if (ImGui::BeginPopupContextItem()) {
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 if (substitutions_day.last_change_timestamp == 0) {
