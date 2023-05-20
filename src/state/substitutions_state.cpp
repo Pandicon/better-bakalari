@@ -83,3 +83,48 @@ Substitution::Substitution(std::string _day, std::string _subject, std::string _
 };
 
 Substitution::~Substitution() {};
+
+SubstitutionDayWithIndex::SubstitutionDayWithIndex(int _index, std::string _day, std::string _day_raw, std::vector<SubstitutionWithIndices> _substitutions) {
+	index = _index;
+	
+	day = _day;
+	day_raw = _day_raw;
+	substitutions = _substitutions;
+
+	last_changes = std::vector<std::string>();
+	last_change_timestamp = 0;
+};
+
+SubstitutionDayWithIndex::~SubstitutionDayWithIndex() {};
+
+SubstitutionWithIndices::SubstitutionWithIndices(int _day_index, int _index, std::string _day, std::string _subject, std::string _hours, std::string _change_type, std::string _description, std::string _time) {
+	day_index = _day_index;
+	index = _index;
+
+	day = _day;
+	subject = _subject;
+	hours = _hours;
+	change_type = _change_type;
+	description = _description;
+	time = _time;
+
+	last_change = "";
+	last_change_timestamp = 0;
+};
+
+SubstitutionWithIndices::SubstitutionWithIndices(int _day_index, int _index, const Substitution& _substitution) {
+	day_index = _day_index;
+	index = _index;
+
+	day = _substitution.day;
+	subject = _substitution.subject;
+	hours = _substitution.hours;
+	change_type = _substitution.change_type;
+	description = _substitution.description;
+	time = _substitution.time;
+
+	last_change = _substitution.last_change;
+	last_change_timestamp = _substitution.last_change_timestamp;
+};
+
+SubstitutionWithIndices::~SubstitutionWithIndices() {};
