@@ -12,8 +12,7 @@
 #include "../../imgui_utils.h"
 
 void Application::render_substitutions() {
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_MenuBar;
+    const ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse;
     if (!ImGui::Begin("Substitutions", &state.show_substitutions_window, window_flags)) {
         ImGui::End();
         return;
