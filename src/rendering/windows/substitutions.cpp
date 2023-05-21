@@ -51,30 +51,37 @@ void Application::render_substitutions() {
                     ImGui::TextUnformatted(("No new changes found so far for " + substitutions_day.day).c_str());
                 } else {
                     ImGui::TextUnformatted(("New changes for " + substitutions_day.day + " | Last changed: " + get_date_time_string(substitutions_day.last_change_timestamp)).c_str());
-                    int i = 0;
-                    while (i < substitutions_day.last_changes.size()) {
-                        ImGui::Separator();
-                        ImGui::TextUnformatted(substitutions_day.last_changes[i].c_str());
+                    if (!substitutions_day.last_changes.empty()) {
                         ImGui::SameLine();
-                        if (ImGui::SmallButton("Remove")) {
-                            substitutions_day.last_changes.erase(substitutions_day.last_changes.begin() + i);
-                        } else {
-                            i += 1;
+                        if (ImGui::SmallButton("Remove all")) {
+                            substitutions_day.last_changes.clear();
                         }
-                    }
-                    /*substitutions_day.last_changes.erase(std::remove_if(substitutions_day.last_changes.begin(), substitutions_day.last_changes.end(),
-                        [](std::string last_change) {
+                        int i = 0;
+                        while (i < substitutions_day.last_changes.size()) {
                             ImGui::Separator();
-                            ImGui::TextUnformatted(last_change.c_str());
+                            ImGui::TextUnformatted(substitutions_day.last_changes[i].c_str());
                             ImGui::SameLine();
-                            return ImGui::SmallButton("Remove");
-                        }), substitutions_day.last_changes.end());*/
-                    ImGui::PopTextWrapPos();
+                            if (ImGui::SmallButton("Remove")) {
+                                substitutions_day.last_changes.erase(substitutions_day.last_changes.begin() + i);
+                            }
+                            else {
+                                i += 1;
+                            }
+                        }
+                        /*substitutions_day.last_changes.erase(std::remove_if(substitutions_day.last_changes.begin(), substitutions_day.last_changes.end(),
+                            [](std::string last_change) {
+                                ImGui::Separator();
+                                ImGui::TextUnformatted(last_change.c_str());
+                                ImGui::SameLine();
+                                return ImGui::SmallButton("Remove");
+                            }), substitutions_day.last_changes.end());*/
+                    }
                     ImGui::Separator();
                 }
                 if (ImGui::Button("Close")) {
                     ImGui::CloseCurrentPopup();
                 }
+                ImGui::PopTextWrapPos();
                 ImGui::EndPopup();
             }
             if (ImGui::IsItemHovered()) {
