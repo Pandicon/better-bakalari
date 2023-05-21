@@ -9,9 +9,9 @@
 #include "state.h"
 
 State::State() {
-	show_settings_window = true;
+	show_settings_window = false;
 	show_substitutions_window = true;
-	show_demo_window = true;
+	show_demo_window = false;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	fps_clamp = 0.0;
@@ -25,8 +25,9 @@ State::~State() {
 }
 
 void State::init() {
-	show_settings_window = true;
-	show_demo_window = true;
+	show_settings_window = false;
+	show_substitutions_window = true;
+	show_demo_window = false;
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	frame_timestamp = std::time(nullptr);
