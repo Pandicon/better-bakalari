@@ -91,6 +91,8 @@ ImGUI UI code
 void Application::Update() {
     state.frame_timestamp = std::time(nullptr);
 
+    render_main_window();
+
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
     if (state.show_demo_window)
         ImGui::ShowDemoWindow(&state.show_demo_window);
@@ -149,7 +151,9 @@ void Application::Update() {
         if (state.substitutions.load_automatically && state.frame_timestamp > state.substitutions.last_loaded_timestamp + state.substitutions.load_delay_seconds) {
             update_substitutions();
         }
-        render_substitutions();
+        if (state.show_substitutions_window) {
+            render_substitutions();
+        }
     }
     if (state.show_settings_window) {
         render_settings();
