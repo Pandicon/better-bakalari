@@ -10,6 +10,8 @@ SubstitutionsState::SubstitutionsState() {
 	just_reloaded = false;
 	last_loaded_timestamp = 0;
 	last_loaded = "";
+	last_changed_timestamp = 0;
+	last_changed = "";
 	load_automatically = false;
 	load_delay_seconds = 300;
 }

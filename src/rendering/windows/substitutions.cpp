@@ -30,7 +30,14 @@ void Application::render_substitutions() {
             ImGui::PopItemWidth();
             ImGui::EndMenu();
         }
-        ImGui::Text(state.substitutions.last_loaded.c_str());
+        std::string load_change_info = state.substitutions.last_loaded;
+        if (state.substitutions.last_loaded != "" && state.substitutions.last_changed != "") {
+            load_change_info += " | ";
+        }
+        if (state.substitutions.last_changed != "") {
+            load_change_info += "Last changed: " + state.substitutions.last_changed;
+        }
+        ImGui::Text(load_change_info.c_str());
         ImGui::EndMenuBar();
     }
     for (auto &substitutions_day : state.substitutions.substitution_days) {
@@ -128,13 +135,13 @@ void Application::update_substitutions() {
                 state.substitutions.last_loaded_timestamp = state.frame_timestamp;
                 std::tm time_info;
                 localtime_s(&time_info, &state.frame_timestamp);
-                state.substitutions.last_loaded = "Last loaded: ";
-                state.substitutions.last_loaded += (time_info.tm_mday < 10 ? "0" : "") + std::to_string(time_info.tm_mday) + "." +
+                std::string current_time_string = (time_info.tm_mday < 10 ? "0" : "") + std::to_string(time_info.tm_mday) + "." +
                     (time_info.tm_mon < 10 ? "0" : "") + std::to_string(time_info.tm_mon) + "." +
                     std::to_string(1900 + time_info.tm_year) + " at " +
                     (time_info.tm_hour < 10 ? "0" : "") + std::to_string(time_info.tm_hour) + ":" +
                     (time_info.tm_min < 10 ? "0" : "") + std::to_string(time_info.tm_min) + ":" +
                     (time_info.tm_sec < 10 ? "0" : "") + std::to_string(time_info.tm_sec);
+                state.substitutions.last_loaded = "Last loaded: " + current_time_string;
                 std::optional<std::vector<SubstitutionDay>> parsed_past_substitutions = std::nullopt;
                 std::ifstream substitutions_log_in("./substitutions_log.json");
                 if (substitutions_log_in.is_open()) {
@@ -213,6 +220,8 @@ void Application::update_substitutions() {
                 // If there is a substitution in the log and in the current data, there was a change
                 // If there is a substitution in the current data but not in the lot, it was added
                 if (!current_substitutions.empty() || !past_substitutions.empty()) {
+                    state.substitutions.last_changed = current_time_string;
+                    state.substitutions.last_changed_timestamp = state.frame_timestamp;
                     BA_INFO("--- SUBSTITUTIONS CHANGED ---");
                 }
                 cp = pp = 0;

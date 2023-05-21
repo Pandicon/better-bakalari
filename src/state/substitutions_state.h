@@ -60,6 +60,8 @@ struct SubstitutionsState {
 
 	time_t last_loaded_timestamp;
 	std::string last_loaded;
+	time_t last_changed_timestamp;
+	std::string last_changed;
 
 	bool load_automatically;
 	int load_delay_seconds;
