@@ -19,6 +19,8 @@ State::State() {
 	auth = AuthState::AuthState();
 	login = LoginState::LoginState();
 	substitutions = SubstitutionsState::SubstitutionsState();
+	frame_timestamp = 0;
+	frame_date_time = std::nullopt;
 }
 
 State::~State() {
@@ -31,6 +33,7 @@ void State::init() {
 	show_another_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	frame_timestamp = std::time(nullptr);
+	frame_date_time = std::nullopt;
 
 	bool save_file_loaded = false;
 	std::ifstream save_file("save.json");

@@ -5,6 +5,7 @@
 #include <string>
 #include <imgui.h>
 
+#include "date_time.h"
 #include "./state/auth_state.h"
 #include "./state/login_state.h"
 #include "./state/substitutions_state.h"
@@ -31,5 +32,6 @@ struct State
 
 	float fps_clamp;
 	time_t frame_timestamp;
+	std::optional<DateTime> frame_date_time;
 };
 

@@ -90,6 +90,7 @@ ImGUI UI code
 */
 void Application::Update() {
     state.frame_timestamp = std::time(nullptr);
+    state.frame_date_time = std::nullopt;
 
     render_main_window();
 

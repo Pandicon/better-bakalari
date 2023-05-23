@@ -46,6 +46,7 @@ struct SubstitutionDay {
 
 	std::vector<std::string> last_changes;
 	time_t last_change_timestamp;
+	std::string last_change;
 };
 
 struct SubstitutionsState {
@@ -113,4 +114,5 @@ struct SubstitutionDayWithIndex {
 
 	std::vector<std::string> last_changes;
 	time_t last_change_timestamp;
+	std::string last_change;
 };

@@ -29,5 +29,4 @@ private:
 	void render_settings();
 	void render_substitutions();
 	void update_substitutions();
-	std::string get_date_time_string(time_t timestamp) const;
 };

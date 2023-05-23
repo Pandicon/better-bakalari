@@ -50,7 +50,7 @@ void Application::render_substitutions() {
                 if (substitutions_day.last_change_timestamp == 0) {
                     ImGui::TextUnformatted(("No new changes found so far for " + substitutions_day.day).c_str());
                 } else {
-                    ImGui::TextUnformatted(("New changes for " + substitutions_day.day + " | Last changed: " + get_date_time_string(substitutions_day.last_change_timestamp)).c_str());
+                    ImGui::TextUnformatted(("New changes for " + substitutions_day.day + " | Last changed: " + substitutions_day.last_change).c_str());
                     if (!substitutions_day.last_changes.empty()) {
                         ImGui::SameLine();
                         if (ImGui::SmallButton("Remove all")) {
@@ -140,14 +140,10 @@ void Application::update_substitutions() {
                 state.substitutions.substitution_days = parsed_substitutions_value;
                 state.substitutions.just_reloaded = true;
                 state.substitutions.last_loaded_timestamp = state.frame_timestamp;
-                std::tm time_info;
-                localtime_s(&time_info, &state.frame_timestamp);
-                std::string current_time_string = (time_info.tm_mday < 10 ? "0" : "") + std::to_string(time_info.tm_mday) + "." +
-                    (time_info.tm_mon < 10 ? "0" : "") + std::to_string(time_info.tm_mon) + "." +
-                    std::to_string(1900 + time_info.tm_year) + " at " +
-                    (time_info.tm_hour < 10 ? "0" : "") + std::to_string(time_info.tm_hour) + ":" +
-                    (time_info.tm_min < 10 ? "0" : "") + std::to_string(time_info.tm_min) + ":" +
-                    (time_info.tm_sec < 10 ? "0" : "") + std::to_string(time_info.tm_sec);
+                if (!state.frame_date_time.has_value()) {
+                    state.frame_date_time = DateTime::DateTime(state.frame_timestamp);
+                }
+                std::string current_time_string = state.frame_date_time.value().get_date_time_string("at");
                 state.substitutions.last_loaded = "Last loaded: " + current_time_string;
                 std::optional<std::vector<SubstitutionDay>> parsed_past_substitutions = std::nullopt;
                 std::ifstream substitutions_log_in("./substitutions_log.json");
@@ -232,18 +228,20 @@ void Application::update_substitutions() {
                     BA_INFO("--- SUBSTITUTIONS CHANGED ---");
                 }
                 cp = pp = 0;
+                std::string date_time_string = state.frame_date_time.value().get_date_time_string();
                 while (cp < current_substitutions.size() || pp < past_substitutions.size()) {
                     if (cp < current_substitutions.size() && pp < past_substitutions.size()) {
                         if (current_substitutions[cp].day_raw < past_substitutions[pp].day_raw) {
                             // The current day is before the currently checked day from the logs -> there can be no changes, everything was added
                             for (const SubstitutionWithIndices& substitution : current_substitutions[cp].substitutions) {
-                                std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution added: "
+                                std::string message = "[" + date_time_string + "] Substitution added: "
                                     + current_substitutions[cp].day + " | " + substitution.hours + " | "
                                     + substitution.time + ", " + substitution.description;
                                 state.substitutions.substitution_days[substitution.day_index].last_changes.insert(
                                     state.substitutions.substitution_days[substitution.day_index].last_changes.begin(), message);
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change = message;
                                 state.substitutions.substitution_days[substitution.day_index].last_change_timestamp = state.frame_timestamp;
+                                state.substitutions.substitution_days[substitution.day_index].last_change = date_time_string;
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                                 BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
@@ -259,12 +257,13 @@ void Application::update_substitutions() {
                                     });
                                 if (it != state.substitutions.substitution_days.end()) {
                                     auto index = std::distance(state.substitutions.substitution_days.begin(), it);
-                                    std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution removed: "
+                                    std::string message = "[" + date_time_string + "] Substitution removed: "
                                         + past_substitutions[pp].day + " | " + substitution.hours + " | "
                                         + substitution.time + ", " + substitution.description;
                                     state.substitutions.substitution_days[index].last_changes.insert(
                                         state.substitutions.substitution_days[index].last_changes.begin(), message);
                                     state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
+                                    state.substitutions.substitution_days[index].last_change = date_time_string;
                                 }
                                 BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                             }
@@ -280,13 +279,14 @@ void Application::update_substitutions() {
                                 if (it != past_substitutions[pp].substitutions.end()) {
                                     auto index = std::distance(past_substitutions[pp].substitutions.begin(), it);
 
-                                    std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution changed: "
+                                    std::string message = "[" + date_time_string + "] Substitution changed: "
                                         + current_substitutions[cp].day + " | " + curr_subs.hours + " | "
                                         + curr_subs.time + " from " + past_substitutions[pp].substitutions[index].description + " to " + curr_subs.description;
                                     state.substitutions.substitution_days[curr_subs.day_index].last_changes.insert(
                                         state.substitutions.substitution_days[curr_subs.day_index].last_changes.begin(), message);
                                     state.substitutions.substitution_days[curr_subs.day_index].substitutions[curr_subs.index].last_change = message;
                                     state.substitutions.substitution_days[curr_subs.day_index].last_change_timestamp = state.frame_timestamp;
+                                    state.substitutions.substitution_days[curr_subs.day_index].last_change = date_time_string;
                                     state.substitutions.substitution_days[curr_subs.day_index].substitutions[curr_subs.index].last_change_timestamp = state.frame_timestamp;
 
                                     BA_INFO("Substitution changed: {} | {} | {} from {} to {}", current_substitutions[cp].day, curr_subs.hours, curr_subs.time, past_substitutions[pp].substitutions[index].description, curr_subs.description);
@@ -299,13 +299,14 @@ void Application::update_substitutions() {
                             }
                             // Now there are no substitution pairs from the same time -> only additions and deletions
                             for (const SubstitutionWithIndices& substitution : current_substitutions[cp].substitutions) {
-                                std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution added: "
+                                std::string message = "[" + date_time_string + "] Substitution added: "
                                     + current_substitutions[cp].day + " | " + substitution.hours + " | "
                                     + substitution.time + ", " + substitution.description;
                                 state.substitutions.substitution_days[substitution.day_index].last_changes.insert(
                                     state.substitutions.substitution_days[substitution.day_index].last_changes.begin(), message);
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change = message;
                                 state.substitutions.substitution_days[substitution.day_index].last_change_timestamp = state.frame_timestamp;
+                                state.substitutions.substitution_days[substitution.day_index].last_change = date_time_string;
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                                 BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
@@ -317,12 +318,13 @@ void Application::update_substitutions() {
                                     });
                                 if (it != state.substitutions.substitution_days.end()) {
                                     auto index = std::distance(state.substitutions.substitution_days.begin(), it);
-                                    std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution removed: "
+                                    std::string message = "[" + date_time_string + "] Substitution removed: "
                                         + past_substitutions[pp].day + " | " + substitution.hours + " | "
                                         + substitution.time + ", " + substitution.description;
                                     state.substitutions.substitution_days[index].last_changes.insert(
                                         state.substitutions.substitution_days[index].last_changes.begin(), message);
                                     state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
+                                    state.substitutions.substitution_days[index].last_change = date_time_string;
                                 }
                                 BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                             }
@@ -333,13 +335,14 @@ void Application::update_substitutions() {
                     else if (cp < current_substitutions.size()) {
                         // All the substitutions this day were added
                         for (const SubstitutionWithIndices& substitution : current_substitutions[cp].substitutions) {
-                            std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution added: "
+                            std::string message = "[" + date_time_string + "] Substitution added: "
                                 + current_substitutions[cp].day + " | " + substitution.hours + " | "
                                 + substitution.time + ", " + substitution.description;
                             state.substitutions.substitution_days[substitution.day_index].last_changes.insert(
                                 state.substitutions.substitution_days[substitution.day_index].last_changes.begin(), message);
                             state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change = message;
                             state.substitutions.substitution_days[substitution.day_index].last_change_timestamp = state.frame_timestamp;
+                            state.substitutions.substitution_days[substitution.day_index].last_change = date_time_string;
                             state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                             BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
@@ -355,12 +358,13 @@ void Application::update_substitutions() {
                                 });
                             if (it != state.substitutions.substitution_days.end()) {
                                 auto index = std::distance(state.substitutions.substitution_days.begin(), it);
-                                std::string message = "[" + get_date_time_string(state.frame_timestamp) + "] Substitution removed: "
+                                std::string message = "[" + date_time_string + "] Substitution removed: "
                                     + past_substitutions[pp].day + " | " + substitution.hours + " | "
                                     + substitution.time + ", " + substitution.description;
                                 state.substitutions.substitution_days[index].last_changes.insert(
                                     state.substitutions.substitution_days[index].last_changes.begin(), message);
                                 state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
+                                state.substitutions.substitution_days[index].last_change = date_time_string;
                             }
                             BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                         }
