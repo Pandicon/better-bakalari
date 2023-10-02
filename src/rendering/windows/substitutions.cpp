@@ -119,6 +119,7 @@ void Application::update_substitutions() {
         });
     if (res) {
         if (res->status == 200) {
+            state.substitutions.api_response = std::nullopt;
             auto parsed_substitutions = state.substitutions.parse_from_json_string(res->body);
             if (!parsed_substitutions.has_value()) {
                 BA_ERROR("Something went wrong while parsing the substitutions response");
@@ -229,6 +230,8 @@ void Application::update_substitutions() {
                 }
                 cp = pp = 0;
                 std::string date_time_string = state.frame_date_time.value().get_date_time_string();
+                std::ofstream substitutions_log_raw;
+                substitutions_log_raw.open("substitutions_log.txt", std::ios_base::app);
                 while (cp < current_substitutions.size() || pp < past_substitutions.size()) {
                     if (cp < current_substitutions.size() && pp < past_substitutions.size()) {
                         if (current_substitutions[cp].day_raw < past_substitutions[pp].day_raw) {
@@ -245,6 +248,9 @@ void Application::update_substitutions() {
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                                 BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
+                                if (substitutions_log_raw.is_open()) {
+                                    substitutions_log_raw << message << std::endl;
+                                }
                             }
                             cp += 1;
                         }
@@ -264,8 +270,11 @@ void Application::update_substitutions() {
                                         state.substitutions.substitution_days[index].last_changes.begin(), message);
                                     state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
                                     state.substitutions.substitution_days[index].last_change = date_time_string;
+                                    BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
+                                    if (substitutions_log_raw.is_open()) {
+                                        substitutions_log_raw << message << std::endl;
+                                    }
                                 }
-                                BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                             }
                             pp += 1;
                         }
@@ -290,6 +299,9 @@ void Application::update_substitutions() {
                                     state.substitutions.substitution_days[curr_subs.day_index].substitutions[curr_subs.index].last_change_timestamp = state.frame_timestamp;
 
                                     BA_INFO("Substitution changed: {} | {} | {} from {} to {}", current_substitutions[cp].day, curr_subs.hours, curr_subs.time, past_substitutions[pp].substitutions[index].description, curr_subs.description);
+                                    if (substitutions_log_raw.is_open()) {
+                                        substitutions_log_raw << message << std::endl;
+                                    }
                                     past_substitutions[pp].substitutions.erase(past_substitutions[pp].substitutions.begin() + index);
                                     current_substitutions[cp].substitutions.erase(current_substitutions[cp].substitutions.begin() + cdp);
                                 }
@@ -310,6 +322,9 @@ void Application::update_substitutions() {
                                 state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                                 BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
+                                if (substitutions_log_raw.is_open()) {
+                                    substitutions_log_raw << message << std::endl;
+                                }
                             }
                             for (const Substitution& substitution : past_substitutions[pp].substitutions) {
                                 auto past_subs_day = past_substitutions[pp];
@@ -325,8 +340,11 @@ void Application::update_substitutions() {
                                         state.substitutions.substitution_days[index].last_changes.begin(), message);
                                     state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
                                     state.substitutions.substitution_days[index].last_change = date_time_string;
+                                    BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
+                                    if (substitutions_log_raw.is_open()) {
+                                        substitutions_log_raw << message << std::endl;
+                                    }
                                 }
-                                BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                             }
                             cp += 1;
                             pp += 1;
@@ -346,6 +364,9 @@ void Application::update_substitutions() {
                             state.substitutions.substitution_days[substitution.day_index].substitutions[substitution.index].last_change_timestamp = state.frame_timestamp;
 
                             BA_INFO("Substitution added: {} | {} | {}, {}", current_substitutions[cp].day, substitution.hours, substitution.time, substitution.description);
+                            if (substitutions_log_raw.is_open()) {
+                                substitutions_log_raw << message << std::endl;
+                            }
                         }
                         cp += 1;
                     }
@@ -365,11 +386,17 @@ void Application::update_substitutions() {
                                     state.substitutions.substitution_days[index].last_changes.begin(), message);
                                 state.substitutions.substitution_days[index].last_change_timestamp = state.frame_timestamp;
                                 state.substitutions.substitution_days[index].last_change = date_time_string;
+                                if (substitutions_log_raw.is_open()) {
+                                    substitutions_log_raw << message << std::endl;
+                                }
+                                BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                             }
-                            BA_INFO("Substitution removed: {} | {} | {}, {}", past_substitutions[pp].day, substitution.hours, substitution.time, substitution.description);
                         }
                         pp += 1;
                     }
+                }
+                if (substitutions_log_raw.is_open()) {
+                    substitutions_log_raw.close();
                 }
             }
         }
